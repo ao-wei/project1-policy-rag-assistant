@@ -1,0 +1,38 @@
+# pyproject.toml 本质上是这个项目的“Python 工程说明书 + 打包/依赖配置文件，是项目的总配置清单
+
+[project]
+# 声明项目基本信息
+name = "policy-rag-assistant"
+version = "0.1.0"
+description = "Campus policy RAG assistant (MVP)"
+requires-python = ">=3.10"
+# 管理依赖
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "pydantic>=2.6.0",
+    "pypdf>=4.0.0",
+    "chromadb>=0.5.0",
+    "sentence-transformers>=3.0.0",
+    "numpy>=1.26.0"
+]
+
+# 将代码注册成命令行工具，安装这个项目后，系统里会多出一个可执行命令 policy-rag，
+# 它会调用代码里的src/policy_rag/cli/app.py 里面的 main 函数
+# 这样可以直接在终端跑 policy-rag xxx
+# 说明做的是可安装、可复用、可交付的工具，而非单纯的脚本
+[project.scripts]
+policy-rag = "policy_rag.cli.app:main"
+
+# 告诉pip“怎么构建/安装这个项目“，用什么方式将它装进环境
+# pip install一个项目时，pip 最喜欢的安装方式为：
+#   直接安装一个wheel(.whl)文件：这是“预先打包好的安装包“，安装快、稳定
+#   但如果没有wheel，pip就需要从源码构建出wheel，再安装，这个过程就需要一个构建后端来执行
+[build-system]
+# 构建过程需要哪些工具
+requires = ["hatchling"]
+# 用哪个“构建后端“把源码构建成可安装的包
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/policy_rag"]

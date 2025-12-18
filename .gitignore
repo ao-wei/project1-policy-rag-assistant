@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# venv / conda
+.venv/
+venv/
+.env/
+.env.*
+
+# macOS
+.DS_Store
+._*
+
+# IDE
+.vscode/
+.idea/
+
+# Data artifacts (重要：RAG 项目务必忽略)
+data/raw/
+data/parsed/
+data/index/
+data/metadata/
+PDFs/
+
+# Logs
+*.log
