@@ -13,7 +13,7 @@ from policy_rag.ingestion.validators import validate_docs_csv
 from policy_rag.cli.parse_cmd import parse_pdf
 from policy_rag.cli.chunk_cmd import chunk_pages
 from policy_rag.cli.index_cmd import index_chunks
-from policy_rag.cli.search import search
+from policy_rag.cli.search_cmd import search
 
 # 创建一个 CLI“应用对象“，后续所有命令都挂在它下面，关闭自动补全
 # app是一个 Typer 对象，这个对象实现了__call__（可调用协议），可以像函数一样被调用
@@ -91,6 +91,7 @@ def search_cmd(
     doc_id: str | None = typer.Option(None, help="Restrict to doc_id"),
     category: str | None = typer.Option(None, help="Restrict to category"),
     show_full: bool = typer.Option(False, help="Show full chunk text"),
+    use_gate: bool = typer.Option(True, help="Enable evidence gate (recommended)")
 ):
     search(
         query,
@@ -98,6 +99,7 @@ def search_cmd(
         doc_id,
         category,
         show_full,
+        use_gate,
     )
 
 def main():

@@ -20,6 +20,12 @@ class Settings:
     embedding_model: str
     chroma_collection: str
 
+    # Evidence Gate
+    evidence_top1_max_dist: float # top-1（排名第一的chunk）的距离不能超过这个上限
+    evidence_good_hit_max_dist: float # 将检索结果中 distance ≤ 该阈值的 chunk 视为“高相关/好证据“
+    evidence_min_good_hits: int # 至少要有多少条“好证据“
+    evidence_min_gap: float # 用median(distance) - top1_distance 衡量区分度，top1 必须“明显优于整体“
+
     @staticmethod
     def from_repo_root(repo_root: Path | None = None) -> Settings:
         # Python常见写法：若 repo_root 不是 None 且为真值，用它；否则，用 Path.cwd()
@@ -32,4 +38,10 @@ class Settings:
             # 优先从环境变量中读取配置；如果没配环境变量，就用默认值
             embedding_model=os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-zh-v1.5"),
             chroma_collection=os.getenv("CHROMA_COLLECTION", "policy-chunks"),
+
+            # Evidence Gate Defaults(distance 越小越相关)
+            evidence_top1_max_dist=float(os.getenv("EVIDENCE_TOP1_MAX_DIST", "0.95")),
+            evidence_good_hit_max_dist=float(os.getenv("EVIDENCE_GOOD_HIT_MAX_DIST", "1.05")),
+            evidence_min_good_hits=int(os.getenv("EVIDENCE_MIN_GOOD_HITS", "2")),
+            evidence_min_gap=float(os.getenv("EVIDENCE_MIN_GAP", "0.03"))
         )
