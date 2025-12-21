@@ -25,6 +25,16 @@ class Settings:
     evidence_good_hit_max_dist: float # 将检索结果中 distance ≤ 该阈值的 chunk 视为“高相关/好证据“
     evidence_min_good_hits: int # 至少要有多少条“好证据“
     evidence_min_gap: float # 用median(distance) - top1_distance 衡量区分度，top1 必须“明显优于整体“
+    
+    # llm
+    llm_provider: str
+    ollama_base_url: str # Ollama服务的地址
+    ollama_model: str # 调用的具体模型名
+    # 采样温度，控制输出的“随机性/发散程度“
+    # 温度越低：越保守、越稳定，越像“按规矩填表
+    # 温度越高：更有创造性，但更容易跑偏
+    ollama_temperature: float 
+    ollama_num_predict: int # 本次最多生成多少token
 
     @staticmethod
     def from_repo_root(repo_root: Path | None = None) -> Settings:
@@ -43,5 +53,12 @@ class Settings:
             evidence_top1_max_dist=float(os.getenv("EVIDENCE_TOP1_MAX_DIST", "0.95")),
             evidence_good_hit_max_dist=float(os.getenv("EVIDENCE_GOOD_HIT_MAX_DIST", "1.05")),
             evidence_min_good_hits=int(os.getenv("EVIDENCE_MIN_GOOD_HITS", "2")),
-            evidence_min_gap=float(os.getenv("EVIDENCE_MIN_GAP", "0.03"))
+            evidence_min_gap=float(os.getenv("EVIDENCE_MIN_GAP", "0.03")),
+
+            # LLM(Ollama)
+            llm_provider=os.getenv("LLM_PROVIDER", "ollama"),
+            ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://0.0.0.0:11434"),
+            ollama_model=os.getenv("OLLAMA_MODEL", "qwen2.5:7b-instruct-q4_K_M"),
+            ollama_temperature=float(os.getenv("OLLAMA_TEMPERATURE", "0.2")),
+            ollama_num_predict=int(os.getenv("OLLAMA_NUM_PREDICT", "800")),
         )
