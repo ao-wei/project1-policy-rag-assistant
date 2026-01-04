@@ -17,18 +17,20 @@ class OllamaClient:
         self.temperature = temperature
         self.num_predict = num_predict
 
-    def chat(self, messages: list[ChatMessage]) -> str:
+    def chat(self, messages: list[ChatMessage], response_format=None) -> str:
         url = f"{self.base_url}/api/chat"
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
             "stream": False,
-            "format": "json",
             "options": {
                 "temperature": self.temperature,
                 "num_predict": self.num_predict,
             }
         }
+
+        if response_format is not None:
+            payload["format"] = response_format
 
         data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         req = urllib.request.Request(

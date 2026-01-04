@@ -15,9 +15,7 @@ from policy_rag.cli.chunk_cmd import chunk_pages
 from policy_rag.cli.index_cmd import index_chunks
 from policy_rag.cli.search_cmd import search
 from policy_rag.cli.ask_cmd import ask
-
-
-
+from policy_rag.cli.summarize_cmd import summarize
 
 # 创建一个 CLI“应用对象“，后续所有命令都挂在它下面，关闭自动补全
 # app是一个 Typer 对象，这个对象实现了__call__（可调用协议），可以像函数一样被调用
@@ -117,6 +115,12 @@ def ask_cmd(
 ):
     ask(query=query, top_k=top_k, doc_id=doc_id, category=category, use_gate=use_gate, show_evidence=show_evidence)
 
+@app.command("summarize")
+def summarize_cmd(
+    doc_id: str = typer.Option(..., help="Target doc_id"),
+    max_sources: int = typer.Option(16, help="Max evidence chunks"),
+):
+    summarize(doc_id=doc_id, max_sources=max_sources)
 
 def main():
     app()

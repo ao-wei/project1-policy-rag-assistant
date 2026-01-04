@@ -152,7 +152,8 @@ def ask(
         [
             ChatMessage(role="system", content=SYSTEM_PROMPT),
             ChatMessage(role="user", content=user_prompt),
-        ]
+        ],
+        response_format=StructuredAnswer.model_json_schema(),
     )
 
     obj = extract_first_json(raw)

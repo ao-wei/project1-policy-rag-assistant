@@ -45,3 +45,14 @@ class ChromaStore:
             where=where,
             include=["documents", "metadatas", "distances"] # 默认会返回ids
         )
+    
+    def get(
+        self,
+        where: dict[str, Any] | None = None,
+        limit: int = 1000,
+    ) -> dict[str, Any]:
+        return self.collection.get(
+            where=where,
+            limit=limit,
+            include=["documents", "metadatas"],
+        )
