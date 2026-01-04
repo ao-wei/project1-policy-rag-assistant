@@ -23,6 +23,7 @@ class OllamaClient:
             "model": self.model,
             "messages": [{"role": m.role, "content": m.content} for m in messages],
             "stream": False,
+            "format": "json",
             "options": {
                 "temperature": self.temperature,
                 "num_predict": self.num_predict,
@@ -39,7 +40,7 @@ class OllamaClient:
 
         try:
             opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-            with opener.open(req, timeout=120) as resp:
+            with opener.open(req, timeout=240) as resp:
                 raw = resp.read().decode("utf-8")
         except Exception as e:
             raise RuntimeError(

@@ -11,7 +11,8 @@ from policy_rag.retrieval.evidence_gate import assess_evidence
 from policy_rag.llm.llm_client import OllamaClient, ChatMessage
 from policy_rag.prompts.qa_prompt import SYSTEM_PROMPT, USER_TEMPLATE
 from policy_rag.utils.json_extract import extract_first_json
-from policy_rag.schemas.answer import AskAnswer, Refusal
+from policy_rag.schemas.answer import Refusal
+from policy_rag.schemas.structured_answer import StructuredAnswer
 
 console = Console()
 
@@ -49,6 +50,28 @@ def _print_evidence_table(hits):
         doc_show = did if not title else f"{did}\n{title}"
         table.add_row(str(h.rank), f"{h.distance:.4f}", doc_show, page, make_snippet(h.text, 160))
     console.print(table)
+
+# 将LLM 生成的“结构化字段（list[Items]）打印成用户可读的分组答案，并把每条要点的引用（页码+原文摘录）补全展示出来
+def _render_items(title: str, items, hits):
+    if not items:
+        return 
+    console.print(f"\n[bold]{title}[/bold]")
+    for i, it in enumerate(items, start=1):
+        console.print(f"{i}. {it.text}  [dim]({it.confidence})[/dim]")
+        for cit in it.citations:
+            sid = cit.source_id
+            if sid < 1 or sid > len(hits):
+                console.print(f"   - [red]Citation error[/red]: source_id={sid} out of range")
+                continue
+            h = hits[sid - 1]
+            md = h.metadata or {}
+            title0 = str(md.get("title", "") or "")
+            did = str(md.get("doc_id", "") or "")
+            page = md.get("page_number", "")
+            quote = cit.quote.strip().replace("\n", " ")
+            if len(quote) > 120:
+                quote = quote[:120].rstrip() + "…"
+            console.print(f"   - 引用：{title0 or did} | doc_id={did} | p.{page} | “{quote}”")
 
 def ask(
     query: str,
@@ -151,32 +174,28 @@ def ask(
                 console.print(f"  - {w}")
         raise typer.Exit(code=0)
     
-    parsed = AskAnswer.model_validate(obj=obj)
+    parsed = StructuredAnswer.model_validate(obj=obj)
 
     # Render answer with enriched citations
     console.print("\n[bold green]结构化回答（基于证据）[/bold green]")
     console.print(f"问题：{parsed.question}\n")
 
-    for idx, cl in enumerate(parsed.claims, start=1):
-        console.print(f"{idx}. {cl.claim}  [dim]({cl.confidence})[/dim]")
-        for cit in cl.citations:
-            sid = cit.source_id
-            if sid < 1 or sid > len(hits):
-                console.print(f"   - [red]Citation error[/red]: source_id={sid} out of range")
-                continue
-            h = hits[sid - 1]
-            md = h.metadata or {}
-            title = str(md.get("title", "") or "")
-            did = str(md.get("doc_id", "") or "")
-            page = md.get("page_number", "")
-            quote = cit.quote.strip().replace("\n", " ")
-            if len(quote) > 120:
-                quote = quote[:120].rstrip() + "…"
-            console.print(f"   - 引用：{title or did} | doc_id={did} | p.{page} | “{quote}”")
-        console.print("")
+    _render_items("适用对象 / 范围", parsed.applicable_to, hits)
+    _render_items("核心结论", parsed.key_conclusions, hits)
+    _render_items("条件 / 资格 / 门槛", parsed.conditions, hits)
+    _render_items("材料清单", parsed.materials, hits)
+    _render_items("流程步骤", parsed.procedure, hits)
+    _render_items("时间节点 / 截止日期", parsed.time_nodes, hits)
+    _render_items("例外条款 / 坑点", parsed.exceptions_pitfalls, hits)
+    _render_items("咨询渠道 / 官方入口", parsed.contact_channel, hits)
+
+    if parsed.uncertainties:
+        console.print("\n[bold yellow]不确定项（证据不足，需核对原文/补充信息）[/bold yellow]")
+        for u in parsed.uncertainties:
+            console.print(f"- {u}")
 
     if parsed.follow_up_questions:
-        console.print("[bold]若你想得到更精确答案，建议补充：[/bold]")
+        console.print("\n[bold]为了给出确定答案，建议你补充：[/bold]")
         for q in parsed.follow_up_questions:
             console.print(f"- {q}")
 
