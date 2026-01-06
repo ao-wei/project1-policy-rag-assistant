@@ -56,3 +56,10 @@ class ChromaStore:
             limit=limit,
             include=["documents", "metadatas"],
         )
+    
+    def delete(
+        self,
+        where = None,
+        ids = None,
+    ) -> None:
+        self.collection.delete(where=where, ids=ids)

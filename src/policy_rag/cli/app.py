@@ -16,6 +16,7 @@ from policy_rag.cli.index_cmd import index_chunks
 from policy_rag.cli.search_cmd import search
 from policy_rag.cli.ask_cmd import ask
 from policy_rag.cli.summarize_cmd import summarize
+from policy_rag.cli.ingest_cmd import ingest
 
 # 创建一个 CLI“应用对象“，后续所有命令都挂在它下面，关闭自动补全
 # app是一个 Typer 对象，这个对象实现了__call__（可调用协议），可以像函数一样被调用
@@ -121,6 +122,30 @@ def summarize_cmd(
     max_sources: int = typer.Option(16, help="Max evidence chunks"),
 ):
     summarize(doc_id=doc_id, max_sources=max_sources)
+
+@app.command("ingest")
+def ingest_cmd(
+    doc_id: str | None = typer.Option(None, help="Ingest a single doc_id"),
+    all_docs: bool = typer.Option(False, help="Ingest all docs"),
+    reparse: bool = typer.Option(False, help="Force re-parse PDF"),
+    rechunk: bool = typer.Option(False, help="Force re-chunk"),
+    reset_doc: bool = typer.Option(False, help="Delete existing vectors for this doc before upsert"),
+    chunk_size: int = typer.Option(1000, help="Chunk size in characters"),
+    overlap: int = typer.Option(150, help="Overlap in characters"),
+    min_chunk_chars: int = typer.Option(80, help="Drop too-short chunks"),
+    embed_batch_size: int = typer.Option(32, help="Embedding batch size"),
+):
+    ingest(
+        doc_id=doc_id,
+        all_docs=all_docs,
+        reparse=reparse,
+        rechunk=rechunk,
+        reset_doc=reset_doc,
+        chunk_size=chunk_size,
+        overlap=overlap,
+        min_chunk_chars=min_chunk_chars,
+        embed_batch_size=embed_batch_size,
+    )
 
 def main():
     app()
