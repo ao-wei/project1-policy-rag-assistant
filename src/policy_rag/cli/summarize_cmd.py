@@ -11,6 +11,7 @@ from policy_rag.prompts.policy_card_prompt import SYSTEM_PROMPT, USER_TEMPLATE
 from policy_rag.schemas.structured_answer import StructuredAnswer
 from policy_rag.utils.json_extract import extract_first_json
 from policy_rag.ingestion.indexing import load_docs_meta
+from policy_rag.retrieval.quote_verify import quote_in_text
 
 console = Console()
 
@@ -91,7 +92,14 @@ def _render_items(title: str, items, picked):
             quote = cit.quote.strip().replace("\n", " ")
             if len(quote) > 120:
                 quote = quote[:120].rstrip() + "…"
-            console.print(f"   - 引用：{title0 or did} | doc_id={did} | p.{page} | “{quote}”")
+            source_text = picked[sid - 1]["text"] or ""
+            ok = quote_in_text(quote, source_text)
+            tag = "[green]QUOTE_OK[/green]" if ok else "[bold red]QUOTE_MISSING[/bold red]"
+
+            console.print(f"   - 引用：{title0 or did} | doc_id={did} | p.{page} | “{quote}”  {tag}")
+            if not ok:
+                console.print("     [red]提示[/red]：quote 未在该 source chunk 中命中，可能是模型改写/拼接/省略号导致。")
+
 
 def summarize(
     doc_id: str = ...,

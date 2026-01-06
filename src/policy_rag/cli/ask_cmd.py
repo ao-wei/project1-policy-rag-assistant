@@ -13,6 +13,7 @@ from policy_rag.prompts.qa_prompt import SYSTEM_PROMPT, USER_TEMPLATE
 from policy_rag.utils.json_extract import extract_first_json
 from policy_rag.schemas.answer import Refusal
 from policy_rag.schemas.structured_answer import StructuredAnswer
+from policy_rag.retrieval.quote_verify import quote_in_text
 
 console = Console()
 
@@ -71,7 +72,13 @@ def _render_items(title: str, items, hits):
             quote = cit.quote.strip().replace("\n", " ")
             if len(quote) > 120:
                 quote = quote[:120].rstrip() + "…"
-            console.print(f"   - 引用：{title0 or did} | doc_id={did} | p.{page} | “{quote}”")
+            source_text = h.text or ""
+            ok = quote_in_text(quote, source_text)
+            tag = "[green]QUOTE_OK[/green]" if ok else "[bold red]QUOTE_MISSING[/bold red]"
+
+            console.print(f"   - 引用：{title0 or did} | doc_id={did} | p.{page} | “{quote}”  {tag}")
+            if not ok:
+                console.print("     [red]提示[/red]：quote 未在该 chunk 中命中，可能是模型改写/拼接/省略号/跨页引用导致。")
 
 def ask(
     query: str,
