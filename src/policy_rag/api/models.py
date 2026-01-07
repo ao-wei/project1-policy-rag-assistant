@@ -45,3 +45,13 @@ class ChatResponse(BaseModel):
     answer: Optional[StructuredAnswer] = None
     sources: list[Source] = Field(default_factory=list)
 
+class IngestResponse(BaseModel):
+    doc_id: str
+    file_path: str
+    pages: int
+    empty_pages: int
+    chunks: int
+    indexed_chunks: int
+    collection_count_now: int
+    warnings: list[str] = Field(default_factory=list)
+
