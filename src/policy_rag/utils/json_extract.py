@@ -3,6 +3,20 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import re
+
+def _quote_unquoted_keys(payload: str) -> str:
+    """
+    将 { key: ... } 或 , key: ... 这种 JSON5 风格的“裸 key”
+    修复为标准 JSON：{ "key": ... } / , "key": ...
+    注意：只匹配在 { 或 , 之后出现的 key，避免误伤字符串内容。
+    """
+    return re.sub(
+        r'([{\[,]\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:',
+        r'\1"\2":',
+        payload,
+    )
+
 
 def _escape_control_chars_inside_json_strings(s: str) -> str:
     """
@@ -68,7 +82,7 @@ def extract_first_json(text: str) -> Any:
         return _try_parse(s)
     except json.JSONDecodeError:
         # Fallback: fix common Ollama/LLM issue — raw newlines inside JSON strings
-        fixed = _escape_control_chars_inside_json_strings(s)
+        fixed = _quote_unquoted_keys(_escape_control_chars_inside_json_strings(s))
         try:
             return _try_parse(fixed)
         except json.JSONDecodeError as e:

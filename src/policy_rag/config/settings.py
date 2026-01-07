@@ -59,6 +59,6 @@ class Settings:
             llm_provider=os.getenv("LLM_PROVIDER", "ollama"),
             ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://0.0.0.0:11434"),
             ollama_model=os.getenv("OLLAMA_MODEL", "qwen2.5:7b-instruct-q4_K_M"),
-            ollama_temperature=float(os.getenv("OLLAMA_TEMPERATURE", "0.0")),
-            ollama_num_predict=int(os.getenv("OLLAMA_NUM_PREDICT", "2400")),
+            ollama_temperature=float(os.getenv("OLLAMA_TEMPERATURE", "0.2")),
+            ollama_num_predict=int(os.getenv("OLLAMA_NUM_PREDICT", "4800")),
         )
