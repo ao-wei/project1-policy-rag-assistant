@@ -55,3 +55,18 @@ class IngestResponse(BaseModel):
     collection_count_now: int
     warnings: list[str] = Field(default_factory=list)
 
+class DocSummaryResponse(BaseModel):
+    doc_id: str
+    title: str
+    category: str = ""
+    publish_date: str = ""
+    effective_date: str = ""
+    status: str = ""
+
+    refusal: Optional[RefusalPayload] = None
+    summary: Optional[StructuredAnswer] = None
+
+    sources: list[Source] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+    
